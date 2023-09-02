@@ -59,6 +59,5 @@ export class HomePage {
 
   atualizarDados(dados:any){
     this.consultarAluno(dados.nome)
-    console.log(al)
   }
 }

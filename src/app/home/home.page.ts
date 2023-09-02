@@ -10,54 +10,74 @@ import { MessageService } from '../services/message.service';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+  isLoading: boolean = false;
+
+  alunos = [];
+
+  nome = 'Joaozinho';
+
+  aluno = {
+    nome: null,
+    idade: null,
+    ra: null,
+    id: null
+  }
+
+  public file: any = {};
+
   constructor(
-    private _authenticate: AuthenticateService,
+    public _authenticate: AuthenticateService,
     private _crudService: CrudService,
-  ) {
-  }
+    public storage: Storage,
+    private _message: MessageService
+  ) { }
 
-  isLoading = true
-  alunos = []
-  getData() {
-    fetch('http://pokeapi.co/api/v2/pokemon/pikachu')
-      .then(dados => dados.json())
-      .then(dados => console.log(dados))
-      .catch(_ => console.log(_))
-      .finally(() => this.isLoading = false)
-  }
-
-  criarConta(dados: any) {
+  criarConta(dados: any){
     this._authenticate.register(dados.email, dados.password)
   }
 
   realizarLogin(dados: any) {
-    this._authenticate.login(dados.email, dados.password)
+    this._authenticate.login(dados.email, dados.password);
   }
 
-  inserirAluno(dados: any) {
-    const aluno = {
-      nome: dados.nome,
-    }
-    this._crudService.insert(aluno, 'alunos')
+  inserirAluno(dados: any){
+    this.aluno.nome = dados.nome;
+    // this.aluno.idade = 10;
+    // this.aluno.ra = 321321;
+
+    this._crudService.insert(this.aluno, 'alunos');
   }
 
-  listarAluno() {
+  listarAlunos(){
     this._crudService.fetchAll('alunos')
-      .then(alunos => {
-        this.alunos = alunos
-      })
+    .then( alunos => {
+      this.alunos = alunos;
+    })
   }
 
-  consultarAluno(dados: any) {
+
+  removerAluno(aluno: any){
+    console.log(aluno);
+    this._crudService.remove(aluno.id, 'alunos')
+  }
+
+  consultarAluno(dados: any){
+    console.log(dados);
     this._crudService.fetchByOperatorParam('nome', '==', dados.nome, 'alunos')
-      .then(aluno => {
-        aluno.forEach((element: any) => {
-          console.log(element)
-        });
-      })
+    .then( aluno => {
+      console.log(aluno[0].id);
+    })
   }
 
-  atualizarDados(dados:any){
-    this.consultarAluno(dados.nome)
+  atualizarDadosAluno(dados: any){
+    if (this.aluno.id == null) {
+      this._crudService.fetchByOperatorParam('nome', '==', dados.nome, 'alunos')
+      .then( aluno => {
+        this.aluno = aluno[0];
+        console.log(this.aluno);
+      })
+    } else {
+      this._crudService.update(this.aluno.id, dados, 'alunos');
+    }
   }
 }
